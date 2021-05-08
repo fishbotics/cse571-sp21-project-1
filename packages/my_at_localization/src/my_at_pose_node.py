@@ -195,7 +195,6 @@ class ATPoseNode(DTROS):
             Args:
                 msg_encoder (:obj:`Compressed`) encoder ROS message.
         """
-
         try:
             cv_image = self.bridge.compressed_imgmsg_to_cv2(image_msg)
         except ValueError as e:
