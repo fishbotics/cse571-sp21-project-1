@@ -74,7 +74,8 @@ class ATPoseNode(DTROS):
             camera_topic,
             CompressedImage,
             self.detectATPose,
-            queue_size=1
+            queue_size=1,
+            buff_size=2**24
         )
 
         camera_info_topic = f'/{self.veh}/camera_node/camera_info'
@@ -214,10 +215,11 @@ class ATPoseNode(DTROS):
         detected_tags = self.at_detector.detect(gray_img, estimate_tag_pose=True, camera_params=camera_params, tag_size=0.065)
         detected_tag_ids = list(map(lambda x: fetch_tag_id(x), detected_tags))
         array_for_pub = Int32MultiArray(data=detected_tag_ids)
-        self.tag_pub.publish(array_for_pub)
         for tag_id, tag in zip(detected_tag_ids, detected_tags):
             print('detected {}: ({}, {})'.format(tag_id, image_msg.header.stamp.to_time(), rospy.Time.now().to_time()))
             self._broadcast_detected_tag(image_msg, tag_id, tag)
+
+        self.tag_pub.publish(array_for_pub)
 
 
 if __name__ == "__main__":
