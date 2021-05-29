@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from typing import Tuple, Optional, List
+import math
 
 import cv2
 import numpy as np
@@ -102,11 +103,15 @@ class ATPoseNode(DTROS):
             self,
             parent_frame_id: str,
             child_frame_id: str,
+            is_static: bool,
             stamp: Optional[float] = None,
             translations: Optional[Tuple[float, float, float]] = None,
             euler_angles: Optional[Tuple[float, float, float]] = None,
             quarternion: Optional[List[float]] = None):
-        br = tf2_ros.StaticTransformBroadcaster()
+        if is_static:
+            br = tf2_ros.StaticTransformBroadcaster()
+        else:
+            br = tf2_ros.TransformBroadcaster()
         ts = TransformStamped()
 
         ts.header.frame_id = parent_frame_id
@@ -160,6 +165,7 @@ class ATPoseNode(DTROS):
         self._broadcast_tf(
             parent_frame_id=tag_frame_id,
             child_frame_id=tag_cam_frame_id,
+            is_static=True,
             euler_angles=(-90 * math.pi / 180, 0, -90 * math.pi / 180)
         )
 
@@ -167,6 +173,7 @@ class ATPoseNode(DTROS):
         self._broadcast_tf(
             parent_frame_id=tag_cam_frame_id,
             child_frame_id=camera_rgb_link_frame_id,
+            is_static=False,
             stamp=image_msg.header.stamp,
             translations=out_t,
             quarternion=out_q
@@ -176,6 +183,7 @@ class ATPoseNode(DTROS):
         self._broadcast_tf(
             parent_frame_id=camera_rgb_link_frame_id,
             child_frame_id=camera_link_frame_id,
+            is_static=True,
             stamp=image_msg.header.stamp,
             euler_angles=(0, -90 * math.pi / 180, 90 * math.pi / 180)
         )
@@ -184,6 +192,7 @@ class ATPoseNode(DTROS):
         self._broadcast_tf(
             parent_frame_id=camera_link_frame_id,
             child_frame_id=base_link_frame_id,
+            is_static = True,
             stamp=image_msg.header.stamp,
             translations=(-0.066, 0, -0.106),
             euler_angles=(0, -15 * math.pi / 180, 0)
